@@ -1,0 +1,44 @@
+<html>
+<head>
+<title>MOXide</title>
+<link rel="stylesheet" href="/static/css/codemirror/codemirror.css"/> 
+<script src="/static/javascript/codemirror/codemirror.js"></script>
+<script src="/static/javascript/codemirror/mode/xquery/xquery.js"></script> 
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<link rel="stylesheet" href="/static/css/codemirror/theme/xq-dark.css"/> 
+</head>
+<body>
+<div id="explorer-window" class="drawer left">
+</div>
+<div id="main">
+<div class="tab">
+<h2>Untitled</h2>
+<form id="form" action="/ajax/action/save.xqm">
+<input type="hidden" name="location" />
+<textarea id="editor" name="module" ></textarea>
+</form>
+</div>
+</div>
+<script> 
+  var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+    lineNumbers: true,
+    matchBrackets: true,
+    theme: "xq-dark"
+  });
+  document.getElementById("editor").onChange = function() {
+  	$.post("/ajax/action/save.xqm", $("#form").serialize());
+  };
+  $.get("/ajax/explorer/default.xqm",{'directory-start':'/'},
+  	function(data) {
+		$('#explorer-window').html(data);	
+  	}
+  );
+  $(document).ready(function(){
+  	// TODO
+  	$('a.directory').click(function(){});
+  	// TODO
+  	$('a.file').click(function(){});
+  });
+</script> 
+</body>
+</html>

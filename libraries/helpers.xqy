@@ -1,17 +1,18 @@
 xquery version "1.0-ml";
 
-module namespace helpers := 'http://maxdewpoint.blogger.com/moxide/helpers';
+module namespace helpers = 'http://maxdewpoint.blogger.com/moxide/helpers';
 
+(:
 declare variable $helpers:ADMIN_CONFIG := admin:get-configuration();
-declare variable $helpers:GROUP_ID := admin:group-get-id($helpers:APP_CONFIG, "Default")
-
+declare variable $helpers:GROUP_ID := admin:group-get-id($helpers:APP_CONFIG, "Default");
+:)
 declare function find-sub-files($directory as xs:string) {
 cts:uris($directory, ('properties','concurrent'), 
     cts:and-query((
-        cts:directory-query($directory,1),
+        cts:directory-query($directory,"1"),
         cts:not-query(
             cts:properties-query(
-                cts:element-query(xs:QName('prop:directory'),cts:and-query(())
+                cts:element-query(xs:QName('prop:directory'),cts:and-query(()))
             )
         )
     ))
@@ -21,9 +22,9 @@ cts:uris($directory, ('properties','concurrent'),
 declare function find-sub-directories($directory as xs:string) {
 cts:uris($directory, ('properties','concurrent'), 
     cts:and-query((
-        cts:directory-query($directory,1),
+        cts:directory-query($directory,"1"),
         cts:properties-query(
-            cts:element-query(xs:QName('prop:directory'),cts:and-query(())
+            cts:element-query(xs:QName('prop:directory'),cts:and-query(()))
         )
     ))
 )

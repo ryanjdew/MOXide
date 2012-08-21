@@ -1,7 +1,8 @@
-xquery version "1.0";
+xquery version "1.0-ml";
 
-import module namespace helpers := 'http://maxdewpoint.blogger.com/moxide/helpers' at '/libraries/helpers.xql';
-import module namespace view := 'http://maxdewpoint.blogger.com/moxide/view' at '/libraries/view.xql';
+import module namespace helpers = 'http://maxdewpoint.blogger.com/moxide/helpers' at '/libraries/helpers.xqy';
+import module namespace view = 'http://maxdewpoint.blogger.com/moxide/view' at '/libraries/view.xqy';
+import module namespace json = 'http://marklogic.com/json' at '/MarkLogic/appservices/utils/json.xqy';
 
 declare variable $app-id as xs:unsignedLong := xs:unsignedLong(xdmp:get-request-field('app-id'));
 declare variable $directory as xs:string := xdmp:get-request-field('directory-start');
@@ -15,5 +16,9 @@ declare variable $directory as xs:string :=
 		xdmp:get-request-field('directory-start')
 	);
 :)
-
-view:display-directory-contents($directory)
+json:serialize(
+    element html {
+        attribute quote {"true"},
+        view:display-directory-contents($directory)
+    }
+)

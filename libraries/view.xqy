@@ -1,8 +1,8 @@
 xquery version "1.0-ml";
 
-module namespace view := 'http://maxdewpoint.blogger.com/moxide/view';
+module namespace view = 'http://maxdewpoint.blogger.com/moxide/view';
 
-import module namespace helpers := 'http://maxdewpoint.blogger.com/moxide/helpers' at '/libraries/helpers.xql';
+import module namespace helpers = 'http://maxdewpoint.blogger.com/moxide/helpers' at '/libraries/helpers.xqy';
 
 declare function display-files($files as xs:string*) {
 	display-file($files)
@@ -17,14 +17,14 @@ declare function display-directories($directories as xs:string*) {
 };
 
 declare function display-directory($directory as xs:string) {
-	<li><a class="directory" data-directory="{$directory}">{fn:tokenize($directory,'/')[fn:last()]}</a></li>
+	<li><a class="directory" data-directory="{$directory}">{fn:tokenize($directory,'/')[. ne ''][fn:last()]}</a></li>
 };
 
 declare function display-directory-contents($directory as xs:string){
-	<ul class="directory-listing">
+	<ul class="directory-listing">{
 	(: directories :)
 	view:display-directories(helpers:find-sub-directories($directory)),
 	(:files :)
 	view:display-files(helpers:find-sub-files($directory))
-	</ul>
-}
+	}</ul>
+};

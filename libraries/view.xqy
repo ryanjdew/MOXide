@@ -9,7 +9,7 @@ declare function display-files($files as xs:string*) {
 };
 
 declare function display-file($file as xs:string) {
-	<li><a class="file" data-file="{$file}">{fn:tokenize($file,'/')[fn:last()]}</a></li>
+	<li><a class="file" data-file="{$file}" href="#f">{fn:tokenize($file,'/')[fn:last()]}</a></li>
 };
 
 declare function display-directories($directories as xs:string*) {
@@ -17,7 +17,7 @@ declare function display-directories($directories as xs:string*) {
 };
 
 declare function display-directory($directory as xs:string) {
-	<li><a class="directory" data-directory="{$directory}">{fn:tokenize($directory,'/')[. ne ''][fn:last()]}</a></li>
+	<li><a class="directory closed" data-directory="{$directory}" href="#d">{fn:tokenize($directory,'/')[. ne ''][fn:last()]}</a></li>
 };
 
 declare function display-directory-contents($directory as xs:string){

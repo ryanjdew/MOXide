@@ -3,13 +3,14 @@
 <title>MOXide</title>
 <link rel="stylesheet" href="/static/css/codemirror/codemirror.css"/> 
 <link rel="stylesheet" href="/static/css/codemirror/theme/xq-dark.css"/> 
+<link rel="stylesheet" href="/static/css/moxide.css"/> 
 </head>
 <body>
 <div id="explorer-window" class="drawer left">
 </div>
 <div id="main">
-<div id="file-template" class="tab hidden">
-<h2>Untitled</h2>
+<div id="file-template" style="display:none;" class="tab hidden">
+<h2><a class="file-title" href="#f" data-id="file-template" >Untitled</h2>
 <form action="/ajax/action/save.xqm">
 <input type="hidden" name="location" />
 <textarea class="editor" name="module" data-id="file-template" ></textarea>
@@ -36,9 +37,13 @@
     $(".editor").live('change',function() {
         $.post("/ajax/action/save.xq", $("#form").serialize());
     });
-  	// TODO
+  	$('#main').on('click','a.file-title',function(){
+        $('div.tab:not(.hidden)').addClass('hidden');
+        $(this).removeClass('hidden');
+    });
   	$('#explorer-window').on('click','a.directory.closed',function(){
         if ($(this).next('ul.directory-listing').length) {
+            $(this).next('ul.directory-listing').show();
             $(this).addClass('open').removeClass('closed').next('ul.directory-listing').show();
         } else {
             var dir = $(this);
@@ -52,10 +57,12 @@
     });
   	$('#explorer-window').on('click','a.directory.open',function(){
         $(this).next('ul.directory-listing').hide();
+        $(this).addClass('closed').removeClass('open');
     });
   	// TODO
   	$('#explorer-window').on('click','a.file',function(){
-        var fileLocation = $(this).data('file'),
+        var fileName = $(this).text(),
+            fileLocation = $(this).data('file'),
             id = fileLocation.replace(/^[^a-zA-z]+/,'').replace(/[\/\.]/g,'_');
         if ($(id).length) {
             $('.tab').addClass('hidden');
@@ -67,9 +74,11 @@
                     $('.tab:last').after(
                         $('#file-template').clone()
                             .removeClass('hidden').attr('id',id)
+                            .find('h2>a').data('id',id).text(fileName).end()
                             .find('input[name="location"]').val(fileLocation).end()
                             .find('textarea.editor').data('id',id).val(data.contents).end()
                     );
+                    $('#'+id).show();
                     CodeMirror.fromTextArea(
                         $('#'+id).find('textarea.editor')[0],
                         codeMirrorSettings

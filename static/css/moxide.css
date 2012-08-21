@@ -1,0 +1,20 @@
+#explorer-window{
+    float:left;
+    width:300px;
+    overflow:auto;
+    border:1px solid black;
+}
+#explorer-window ul {
+    list-style-type:none;
+}
+#explorer-window a {
+    padding-left:18px;
+    background-image:url('/static/images/explorer-sprite.png');
+    background-repeat:no-repeat;
+}
+#explorer-window a.directory.open {
+    background-position: 0px -26px;
+}
+#explorer-window a.file {
+    background-position: 0px -52px;
+}

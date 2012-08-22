@@ -9,8 +9,8 @@
 <div id="explorer-window" class="drawer left">
 </div>
 <div id="main">
+<ul id="files-list"><li id="file-name-template" style="display:none;"><a class="file-title" href="#f" data-id="file-template" >Untitled</a><a class="file-close" href="#d" data-id="file-template">X</a></li></ul>
 <div id="file-template" style="display:none;" class="tab hidden">
-<h2><a class="file-title" href="#f" data-id="file-template" >Untitled</h2>
 <form action="/ajax/action/save.xqm">
 <input type="hidden" name="location" />
 <textarea class="editor" name="module" data-id="file-template" ></textarea>
@@ -37,9 +37,18 @@
     $(".editor").live('change',function() {
         $.post("/ajax/action/save.xq", $("#form").serialize());
     });
-  	$('#main').on('click','a.file-title',function(){
+  	$('#files-list').on('click','a.file-title',function(){
         $('div.tab:not(.hidden)').addClass('hidden');
         $(this).removeClass('hidden');
+    });
+  	$('#files-list').on('click','a.file-close',function(){
+		var curItem = $(this),
+			tab = $('#'+curItem.data('id'));
+        if (!tab.hasClass('hidden')) {
+			$('.tab:last').removeClass('hidden');
+        }
+		tab.remove();
+		curItem.parent().remove();
     });
   	$('#explorer-window').on('click','a.directory.closed',function(){
         if ($(this).next('ul.directory-listing').length) {
@@ -65,20 +74,23 @@
             fileLocation = $(this).data('file'),
             id = fileLocation.replace(/^[^a-zA-z]+/,'').replace(/[\/\.]/g,'_');
         if ($(id).length) {
-            $('.tab').addClass('hidden');
+            $('.tab:not(.hidden)').addClass('hidden');
             $(id).removeClass('hidden');
         } else {
             $.get("/ajax/actions/open.xq",{'location':fileLocation},
                 function(data) {
-                    $('.tab').addClass('hidden');
+					var newLI =  $('#file-name-template').clone().removeAttr('id');
+					$('#files-list').append(
+						newLI.find('a.file-title').data('id',id).text(fileName).end()
+							.find('a.file-close').data('id',id).end().css('display','')
+					);
+                    $('.tab:not(.hidden)').addClass('hidden');
                     $('.tab:last').after(
                         $('#file-template').clone()
-                            .removeClass('hidden').attr('id',id)
-                            .find('h2>a').data('id',id).text(fileName).end()
+                            .removeClass('hidden').attr('id',id).css('display','')
                             .find('input[name="location"]').val(fileLocation).end()
                             .find('textarea.editor').data('id',id).val(data.contents).end()
                     );
-                    $('#'+id).show();
                     CodeMirror.fromTextArea(
                         $('#'+id).find('textarea.editor')[0],
                         codeMirrorSettings

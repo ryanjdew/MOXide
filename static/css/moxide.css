@@ -25,8 +25,6 @@
 
 #files-list {
 	position:relative;
-	float:left;
-	width:100%;
 	padding:0 0 1.75em 1em;
 	margin:0;
 	list-style:none;
@@ -37,8 +35,11 @@
 	margin:0;
 	padding:0;
 }
+#files-list a.file-close {
+    position:relative;
+    left:-14px;
+}
 #files-list a.file-title {
-	display:block;
 	color:#444;
 	text-decoration:none;
 	font-weight:bold;
@@ -56,5 +57,4 @@
 }
 #files-list a.file-title.open {
 	position:relative;
-	z-index:102;
 }

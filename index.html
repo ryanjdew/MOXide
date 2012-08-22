@@ -27,6 +27,10 @@
         matchBrackets: true,
         theme: "xq-dark"
     };
+  function clearEditorState() {
+    $('#files-list .file-title.open').removeClass('open');
+    $('div.tab:not(.hidden)').addClass('hidden');
+  };
   $(document).ready(function(){
     $.get("/ajax/explorer/default.xq",{'directory-start':'/'},
         function(data) {
@@ -38,14 +42,16 @@
         $.post("/ajax/action/save.xq", $("#form").serialize());
     });
   	$('#files-list').on('click','a.file-title',function(){
-        $('div.tab:not(.hidden)').addClass('hidden');
-        $(this).removeClass('hidden');
+        clearEditorState();
+        $(this).addClass('open');
+        $('#'+$(this).data('id')).removeClass('hidden');
     });
   	$('#files-list').on('click','a.file-close',function(){
 		var curItem = $(this),
 			tab = $('#'+curItem.data('id'));
         if (!tab.hasClass('hidden')) {
 			$('.tab:last').removeClass('hidden');
+            $('.file-title:last:not(#file-name-template)').addClass('open');
         }
 		tab.remove();
 		curItem.parent().remove();
@@ -68,23 +74,22 @@
         $(this).next('ul.directory-listing').hide();
         $(this).addClass('closed').removeClass('open');
     });
-  	// TODO
   	$('#explorer-window').on('click','a.file',function(){
         var fileName = $(this).text(),
             fileLocation = $(this).data('file'),
             id = fileLocation.replace(/^[^a-zA-z]+/,'').replace(/[\/\.]/g,'_');
+        clearEditorState();
         if ($(id).length) {
-            $('.tab:not(.hidden)').addClass('hidden');
             $(id).removeClass('hidden');
+            $('.file-title[data-id="' + id + '"]').addClass('open');
         } else {
             $.get("/ajax/actions/open.xq",{'location':fileLocation},
                 function(data) {
 					var newLI =  $('#file-name-template').clone().removeAttr('id');
 					$('#files-list').append(
-						newLI.find('a.file-title').data('id',id).text(fileName).end()
+						newLI.find('a.file-title').data('id',id).text(fileName).addClass('open').end()
 							.find('a.file-close').data('id',id).end().css('display','')
 					);
-                    $('.tab:not(.hidden)').addClass('hidden');
                     $('.tab:last').after(
                         $('#file-template').clone()
                             .removeClass('hidden').attr('id',id).css('display','')

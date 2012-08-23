@@ -11,7 +11,7 @@
 <div id="main">
 <ul id="files-list"><li id="file-name-template" style="display:none;"><a class="file-title" href="#f" data-id="file-template" >Untitled</a><a class="file-close" href="#d" data-id="file-template">X</a></li></ul>
 <div id="file-template" style="display:none;" class="tab hidden">
-<form action="/ajax/action/save.xqm">
+<form action="/ajax/actions/save.xqm" class="moxide">
 <input type="hidden" name="location" />
 <textarea class="editor" name="module" data-id="file-template" ></textarea>
 </form>
@@ -19,14 +19,19 @@
 </div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script src="/static/javascript/codemirror/codemirror.js"></script>
-<script src="/static/javascript/codemirror/mode/xquery/xquery.js"></script> 
+<script src="/static/javascript/codemirror/keymap/emacs.js"></script>
+<script src="/static/javascript/codemirror/mode/xquery/xquery.js"></script>
+<script src="/static/javascript/codemirror/codemirror-ui.js" type="text/javascript"></script>
+<link rel="stylesheet" href="/static/css/codemirror/codemirror-ui.css" type="text/css" media="screen" />
 <script> 
   var codeMirrorSettings =  
     {
         lineNumbers: true,
         matchBrackets: true,
-        theme: "xq-dark"
+        theme: "xq-dark",
+        keyMap: "emacs"
     };
+  var editors = {};
   function clearEditorState() {
     $('#files-list .file-title.open').removeClass('open');
     $('div.tab:not(.hidden)').addClass('hidden');
@@ -38,9 +43,6 @@
         },
         'json'
     );
-    $(".editor").live('change',function() {
-        $.post("/ajax/action/save.xq", $("#form").serialize());
-    });
   	$('#files-list').on('click','a.file-title',function(){
         clearEditorState();
         $(this).addClass('open');
@@ -48,11 +50,13 @@
     });
   	$('#files-list').on('click','a.file-close',function(){
 		var curItem = $(this),
-			tab = $('#'+curItem.data('id'));
+            id = curItem.data('id'),
+			tab = $('#'+id);
         if (!tab.hasClass('hidden')) {
 			$('.tab:last').removeClass('hidden');
             $('.file-title:last:not(#file-name-template)').addClass('open');
         }
+        delete editors[id];
 		tab.remove();
 		curItem.parent().remove();
     });
@@ -96,10 +100,16 @@
                             .find('input[name="location"]').val(fileLocation).end()
                             .find('textarea.editor').data('id',id).val(data.contents).end()
                     );
-                    CodeMirror.fromTextArea(
-                        $('#'+id).find('textarea.editor')[0],
-                        codeMirrorSettings
-                    );
+                    editors[id] = new CodeMirrorUI(
+                            $('#'+id).find('textarea.editor')[0],
+                            {imagePath: '/static/images/silk',
+                            saveCallback: function() {
+                                $('#'+id+' textarea.editor').val(editors[id].mirror.getValue());
+                                $.post("/ajax/actions/save.xq", $('#'+id+' form.moxide').serialize());
+                            },
+                            buttons: ['search', 'undo', 'redo','save', 'jump', 'reindentSelection', 'reindent','about']},
+                            codeMirrorSettings
+                        );
                 },
                 'json'
             );

@@ -7,7 +7,17 @@ declare variable $app-root as xs:string := helpers:determine-app-root($location)
 declare variable $static-check as xs:boolean? :=
   try {
     xdmp:eval(
-      $module,
+      if (fn:matches($module,'(^|[&#10;&#13;])\s*module\s+namespace\s+.+?=.*?;'))
+      then 
+        fn:concat(
+            fn:replace(
+                fn:replace($module,'(^|[&#10;&#13;])\s*module\s+namespace\s+.+?=.*?;','')
+                ,'(^|[&#10;&#13;])\s*declare[\s&#10;&#13;]+function[\s&#10;&#13;]+([^\s&#10;&#13;][^:\(]+:)?([^:][^\(]+\()',
+                '$1declare function local:$3'
+            ),
+            ' ()'
+        )
+      else $module,
       (),
       <options xmlns="xdmp:eval"><static-check>true</static-check><root>{ $app-root }</root></options>),
     true()

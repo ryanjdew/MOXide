@@ -9,12 +9,14 @@ declare variable $static-check as xs:boolean? :=
     xdmp:eval(
       if (fn:matches($module,'(^|[&#10;&#13;])\s*module\s+namespace\s+.+?=.*?;'))
       then 
-        fn:concat(
-            fn:replace(
-                fn:replace($module,'(^|[&#10;&#13;])\s*module\s+namespace\s+.+?=.*?;','')
-                ,'(^|[&#10;&#13;])\s*declare[\s&#10;&#13;]+function[\s&#10;&#13;]+([^\s&#10;&#13;][^:\(]+:)?([^:][^\(]+\()',
-                '$1declare function local:$3'
-            ),
+		let $namespace :=  fn:replace($module,'.*(^|[&#10;&#13;])\s*module\s+namespace\s+([^\s=]+)\s*=.*','$2','s')
+        return
+		fn:concat(
+			fn:replace(
+				fn:replace($module,'(^|[&#10;&#13;])\s*module\s+(namespace\s+.+?=.*?;)','$1 declare $2'),
+				fn:concat('(^|\s)(',$namespace,':)?([^:\s\(]+)\('),
+				' local:$3('
+			),
             ' ()'
         )
       else $module,
@@ -42,7 +44,7 @@ try {
       xdmp:document-insert(
         $location,
         document {
-          text { xdmp:pretty-print($module) }
+          text { $module }
         })
     else
       ()

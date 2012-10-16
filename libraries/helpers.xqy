@@ -33,5 +33,5 @@ cts:uris($directory, ('properties','concurrent'),
 };
 
 declare function determine-app-root($location as xs:string) as xs:string? {
-    xdmp:read-cluster-config-file("groups.xml")//group:http-servers/group:http-server[group:webDAV eq fn:false()]/group:root[fn:starts-with($location,.)]
+    (xdmp:read-cluster-config-file("groups.xml")//group:http-servers/group:http-server[group:webDAV eq fn:false()]/group:root[fn:starts-with($location,.)])[1]
 };

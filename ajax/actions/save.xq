@@ -7,21 +7,39 @@ declare variable $app-root as xs:string := helpers:determine-app-root($location)
 declare variable $static-check as xs:boolean? :=
   try {
     xdmp:eval(
-      if (fn:matches($module,'(^|[&#10;&#13;])\s*module\s+namespace\s+.+?=.*?;'))
+      (: if module declaration exists change it to a main module:)
+	  if (fn:matches($module,'(^|[&#10;&#13;])\s*module\s+namespace\s+.+?=.*?;'))
       then 
-		let $namespace :=  fn:replace($module,'.*(^|[&#10;&#13;])\s*module\s+namespace\s+([^\s=]+)\s*=.*','$2','s')
+		(: retrieve namespace name for module :)
+		let $namespace :=  fn:replace($module,'.*(^|[&#10;&#13;])\s*module\s+namespace\s+([^\s=]+)\s*=.*','$2','s'),
+			(: check module to see if a default function namespace declaration already exists :)
+			$has-default-namespace := fn:matches($module, '(declare\s+default\s+function\s+namespace\s+["''])([^"''])*(["''])')
         return
+		(: add empty sequence for query body :)
 		fn:concat(
+			(: change function calles to local namespace :)
 			fn:replace(
-				fn:replace($module,'(^|[&#10;&#13;])\s*module\s+(namespace\s+.+?=.*?;)','$1 declare $2'),
-				fn:concat('(^|\s)(',$namespace,':)?([^:\s\(]+)\('),
-				' local:$3('
+				(: change function declarations to local namespace :)
+				fn:replace(
+					(: change module  namespace declaration to just a namespace declaration :)
+					fn:replace(
+						$module,
+						'(^|[&#10;&#13;])\s*module\s+(namespace\s+.+?=.*?;)',
+						(: if a default function namespace declaration doesn't already exist set it to the local namespace :)
+						fn:concat('$1 declare $2', if (fn:not($has-default-namespace)) then '&#10; declare default function namespace "http://www.w3.org/2005/xquery-local-functions";' else ())
+					),
+					'(^|[&#10;&#13;])\s*declare[\s&#10;&#13;]+function[\s&#10;&#13;]+([^\s&#10;&#13;][^:\(]+:)?([^:][^\(]+\()',
+					'$1declare function local:$3'
+				),
+				fn:concat('([^a-xA-Z0-9\-_])(',$namespace,':)'),
+				(: had default namespace specify local namespace, otherwise remove namespace :)
+				if ($has-default-namespace)  then '$1local:' else '$1'
 			),
-            ' ()'
-        )
+		' ()'
+        )[xdmp:log(.),fn:true()]
       else $module,
       (),
-      <options xmlns="xdmp:eval"><static-check>true</static-check><root>{ $app-root }</root></options>),
+      <options xmlns="xdmp:eval"><static-check>true</static-check><modules>{xdmp:database()}</modules><root>{ $app-root }</root></options>),
     true()
   } catch ($e) {
     if ($e/*:code eq "XDMP-EVALLIBMOD")

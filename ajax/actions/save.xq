@@ -36,7 +36,7 @@ declare variable $static-check as xs:boolean? :=
 				if ($has-default-namespace)  then '$1local:' else '$1'
 			),
 		' ()'
-        )[xdmp:log(.),fn:true()]
+        )
       else $module,
       (),
       <options xmlns="xdmp:eval"><static-check>true</static-check><modules>{xdmp:database()}</modules><root>{ $app-root }</root></options>),
@@ -51,7 +51,7 @@ declare variable $static-check as xs:boolean? :=
           "STATIC_CHECK"),
         concat(
           "This module failed to pass a static check: ",
-          $e/*:message))
+          $e/*:format-string))
   };
 
 try {

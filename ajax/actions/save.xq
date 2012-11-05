@@ -1,5 +1,7 @@
 xquery version "1.0-ml";
 import module namespace helpers="http://maxdewpoint.blogger.com/moxide/helpers" at "/libraries/helpers.xqy";
+import module namespace json = 'http://marklogic.com/json' at '/MarkLogic/appservices/utils/json.xqy';
+
 declare variable $module as xs:string := xdmp:get-request-field("module");
 declare variable $location as xs:string := xdmp:get-request-field("location");
 declare variable $extension as xs:string := replace($location, ".*\.([a-z0-9]+)", "$1");
@@ -51,7 +53,11 @@ declare variable $static-check as xs:boolean? :=
           "STATIC_CHECK"),
         concat(
           "This module failed to pass a static check: ",
-          $e/*:format-string))
+          $e/*:format-string,
+          " data:",
+          string-join($e/*:data/*:datum, ",")
+        )
+      )
   };
 
 try {
@@ -79,12 +85,24 @@ try {
       document {
         text { $module }
       }),
-  "{ success: true }"
+     json:serialize(
+       element result {
+        element success {
+          attribute type {"boolean"},
+          "true"
+        }
+      }
+     )
 } catch ($e) {
-  concat(
-    "{&#10;    success: false,&#10;    reason: &quot;",
-    $e/*:message/string(),
-    " data:",
-    string-join($e/*:data/*:datum/replace(.,'"','\"'), ","),
-    "&quot;}")
+     json:serialize(
+       element result {
+        element success {
+          attribute type {"boolean"},
+          "false"
+        },
+        element reason {
+          $e/*:message/string()
+        }
+      }
+     )
 }

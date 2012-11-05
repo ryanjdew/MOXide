@@ -79,7 +79,23 @@
                             {imagePath: '/static/images/silk',
                             saveCallback: function() {
                                 $('#'+id+' textarea.editor').val(editors[id].mirror.getValue());
-                                $.post("/ajax/actions/save.xq", $('#'+id+' form.moxide').serialize());
+                                $.post(
+                                    "/ajax/actions/save.xq", 
+                                    $('#'+id+' form.moxide').serialize(),
+                                    function (data) {
+                                        console.log('Save attempted');
+                                        console.log(data.result);
+                                        if (data.result.success) {
+                                            $('#overlay>div').addClass('success');
+                                            $('#overlay>div>p').text('Saved successfully!');
+                                        } else {
+                                            $('#overlay>div').addClass('error');
+                                            $('#overlay>div>p').text(data.result.reason);                                        
+                                        }
+                                        $('#overlay').css('visibility', 'visible');
+                                    },
+                                    'json'
+                                );
                             },
                             buttons: ['search', 'undo', 'redo','save', 'jump', 'reindentSelection', 'reindent','about']},
                             codeMirrorSettings
@@ -88,5 +104,9 @@
                 'json'
             );
         }
+    });
+    $('#overlay').click(function () {
+        $(this).css('visibility', 'hidden');
+        $(this).children('div').attr('class','');
     });
   });
